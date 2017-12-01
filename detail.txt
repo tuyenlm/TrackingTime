@@ -1,0 +1,5 @@
+﻿起動またはシャットダウン時に、入室時間と退室時間は自動的にファイルに保存されます。
+Kidō matawa shattodaun-ji ni, nyūshitsu jikan to taishitsu jikan wa jidōteki ni fairu ni hozon sa remasu.
+
+また、アプリが自動的にコンピュータと起動します.
+Mata, apurikēshon ga jidōteki ni konpyūta to kidō shimasu

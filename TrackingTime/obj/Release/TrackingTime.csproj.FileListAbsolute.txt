@@ -1,0 +1,15 @@
+C:\Users\tuyen\source\repos\cafe\cafe\bin\Release\cafe.exe.config
+C:\Users\tuyen\source\repos\cafe\cafe\bin\Release\cafe.exe.manifest
+C:\Users\tuyen\source\repos\cafe\cafe\bin\Release\cafe.application
+C:\Users\tuyen\source\repos\cafe\cafe\bin\Release\cafe.exe
+C:\Users\tuyen\source\repos\cafe\cafe\bin\Release\cafe.pdb
+C:\Users\tuyen\source\repos\cafe\cafe\obj\Release\TrackingTime.csprojResolveAssemblyReference.cache
+C:\Users\tuyen\source\repos\cafe\cafe\obj\Release\cafe.DialogSettings.resources
+C:\Users\tuyen\source\repos\cafe\cafe\obj\Release\cafe.Form1.resources
+C:\Users\tuyen\source\repos\cafe\cafe\obj\Release\cafe.Properties.Resources.resources
+C:\Users\tuyen\source\repos\cafe\cafe\obj\Release\TrackingTime.csproj.GenerateResource.Cache
+C:\Users\tuyen\source\repos\cafe\cafe\obj\Release\TrackingTime.csproj.CoreCompileInputs.cache
+C:\Users\tuyen\source\repos\cafe\cafe\obj\Release\cafe.exe.manifest
+C:\Users\tuyen\source\repos\cafe\cafe\obj\Release\cafe.application
+C:\Users\tuyen\source\repos\cafe\cafe\obj\Release\cafe.exe
+C:\Users\tuyen\source\repos\cafe\cafe\obj\Release\cafe.pdb
