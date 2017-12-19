@@ -13,7 +13,7 @@ namespace TrackingTime
         [STAThread]
         static void Main()
         {
-            if (Program.RunningInstance() == null)
+            if (RunningInstance() == null)
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);

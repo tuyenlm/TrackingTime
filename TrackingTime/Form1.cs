@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -7,41 +6,48 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 namespace TrackingTime
 {
     public partial class Form1 : Form
     {
-        private string imageLink2 = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\images\";
-        private static string logFileLink2 = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\files\";
-        private ToolStripMenuItem CloseMenuItem;
-        private const int WM_NCHITTEST = 0x84;
-        private const int HTCLIENT = 0x1;
-        private const int HTCAPTION = 0x2;
-        private int heightOrigin;
-        private Boolean hide = true;
+        private readonly string _imageLink2 = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\images\";
+        private static readonly string LogFileLink2 = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\files\";
+        private ToolStripMenuItem _closeMenuItem;
+        private const int WmNchittest = 0x84;
+        private const int Htclient = 0x1;
+        private const int Htcaption = 0x2;
+        private readonly int _heightOrigin;
+        private Boolean _hide = true;
         public Form1()
         {
             InitializeComponent();
             InitializeTrayIcon();
-            this.WindowState = FormWindowState.Minimized;
-            this.ShowInTaskbar = false;
-            RegistryKey add = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-            add.SetValue("TrackingTime", Application.StartupPath + @"\" + Process.GetCurrentProcess().ProcessName + ".exe");
-            if (add.GetValue("TrackingTime") == null) add.SetValue("TrackingTime", Application.StartupPath + @"\" + Process.GetCurrentProcess().ProcessName + ".exe");
-            createData("start");
-            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
-            Application.ApplicationExit += new EventHandler(this.OnApplicationExit);
-            heightOrigin = this.Height;
-            Rectangle rcScreen = Screen.PrimaryScreen.WorkingArea;
-            this.Location = new System.Drawing.Point((rcScreen.Left + rcScreen.Right) / 2 - (this.Width / 2), 50);
+            WindowState = FormWindowState.Minimized;
+            ShowInTaskbar = false;
+            var add = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+	        if (add != null)
+	        {
+		        add.SetValue("TrackingTime",
+			        Application.StartupPath + @"\" + Process.GetCurrentProcess().ProcessName + ".exe");
+		        if (add.GetValue("TrackingTime") == null)
+			        add.SetValue("TrackingTime",
+				        Application.StartupPath + @"\" + Process.GetCurrentProcess().ProcessName + ".exe");
+	        }
+	        createData("start");
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+            Application.ApplicationExit += OnApplicationExit;
+            _heightOrigin = Height;
+            var rcScreen = Screen.PrimaryScreen.WorkingArea;
+            Location = new Point((rcScreen.Left + rcScreen.Right) / 2 - Width / 2, 50);
             InitializeComboBox();
             btnClose.TabStop = btnMinimum.TabStop = false;
             btnClose.FlatStyle = btnMinimum.FlatStyle = FlatStyle.Flat;
             btnClose.FlatAppearance.BorderSize = btnMinimum.FlatAppearance.BorderSize = 0;
-            Microsoft.Win32.SystemEvents.SessionEnding += new Microsoft.Win32.SessionEndingEventHandler(SystemEvents_SessionEnded);
+            SystemEvents.SessionEnding += SystemEvents_SessionEnded;
         }
-        void SystemEvents_SessionEnded(object sender, Microsoft.Win32.SessionEndingEventArgs e)
+        void SystemEvents_SessionEnded(object sender, SessionEndingEventArgs e)
         {
             if (e.Reason == SessionEndReasons.SystemShutdown || e.Reason == SessionEndReasons.Logoff)
             {
@@ -51,8 +57,8 @@ namespace TrackingTime
         protected override void WndProc(ref Message message)
         {
             base.WndProc(ref message);
-            if (message.Msg == WM_NCHITTEST && (int)message.Result == HTCLIENT)
-                message.Result = (IntPtr)HTCAPTION;
+            if (message.Msg == WmNchittest && (int)message.Result == Htclient)
+                message.Result = (IntPtr)Htcaption;
         }
         private void OnProcessExit(object sender, EventArgs e)
         {
@@ -65,7 +71,7 @@ namespace TrackingTime
         }
         private void InitializeComboBox()
         {
-            DirectoryInfo d = new DirectoryInfo(logFileLink2);
+            DirectoryInfo d = new DirectoryInfo(LogFileLink2);
             List<string> yearCollection = new List<string>();
             List<string> monthCollection = new List<string>();
             foreach (var file in d.GetFiles("*.txt"))
@@ -87,19 +93,19 @@ namespace TrackingTime
             }
             comboBoxYear.SelectedIndex = comboBoxYear.Items.Count - 1;
             comboBoxMonth.SelectedIndex = comboBoxMonth.Items.Count - 1;
-            changeComboBox();
+            ChangeComboBox();
         }
-        public void changeComboBox()
+        public void ChangeComboBox()
         {
             listViewTime.Items.Clear();
             string yearC = comboBoxYear.SelectedItem.ToString();
             string monthC = comboBoxMonth.SelectedItem.ToString();
             if (yearC != string.Empty && monthC != string.Empty)
             {
-                string path = logFileLink2 + System.Environment.GetEnvironmentVariable("UserName") + "_" + yearC + "_" + monthC + ".txt";
+                string path = LogFileLink2 + Environment.GetEnvironmentVariable("UserName") + "_" + yearC + "_" + monthC + ".txt";
                 if (File.Exists(path))
                 {
-                    string[] lines = System.IO.File.ReadAllLines(path);
+                    string[] lines = File.ReadAllLines(path);
                     ListViewItem item = new ListViewItem();
                     foreach (string line in lines)
                     {
@@ -121,31 +127,31 @@ namespace TrackingTime
             TrayIcon.Visible = true;
             //The icon is added to the project resources.
             //Here I assume that the name of the file is 'TrayIcon.ico'
-            TrayIcon.Icon = new Icon(imageLink2 + "time-ico2.ico");
+            TrayIcon.Icon = new Icon(_imageLink2 + "time-ico2.ico");
             //Optional - Add a context menu to the TrayIcon:
-            CloseMenuItem = new ToolStripMenuItem();
+            _closeMenuItem = new ToolStripMenuItem();
             TrayIconContextMenu.SuspendLayout();
             // 
             // TrayIconContextMenu
             // 
-            this.TrayIconContextMenu.Items.AddRange(new ToolStripItem[] {
-            this.CloseMenuItem});
-            this.TrayIconContextMenu.Name = "TrayIconContextMenu";
-            this.TrayIconContextMenu.Size = new Size(153, 70);
+            TrayIconContextMenu.Items.AddRange(new ToolStripItem[] {
+            _closeMenuItem});
+            TrayIconContextMenu.Name = "TrayIconContextMenu";
+            TrayIconContextMenu.Size = new Size(153, 70);
             // 
             // CloseMenuItem
             // 
-            this.CloseMenuItem.Name = "CloseMenuItem";
-            this.CloseMenuItem.Size = new Size(152, 22);
-            this.CloseMenuItem.Text = "トレイアイコンプログラムを閉じる";
-            this.CloseMenuItem.Click += new EventHandler(this.CloseMenuItem_Click);
+            _closeMenuItem.Name = "CloseMenuItem";
+            _closeMenuItem.Size = new Size(152, 22);
+            _closeMenuItem.Text = @"トレイアイコンプログラムを閉じる";
+            _closeMenuItem.Click += CloseMenuItem_Click;
             TrayIconContextMenu.ResumeLayout(false);
             TrayIcon.ContextMenuStrip = TrayIconContextMenu;
         }
 
         private void CloseMenuItem_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("アプリケーションを終了しますか？", "閉じる", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation,
+            if (MessageBox.Show(@"アプリケーションを終了しますか？", @"閉じる", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation,
                     MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
                 Application.Exit();
@@ -162,26 +168,26 @@ namespace TrackingTime
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Timer tmr = new Timer
+            Timer tmrr = new Timer
             {
                 Interval = 1000//ticks every 1 second
             };
-            tmr.Tick += new EventHandler(tmr_Tick);
-            tmr.Stop();
+            tmrr.Tick += tmr_Tick;
+            tmrr.Stop();
         }
 
         private void createData(string status)
         {
             try
             {
-                string YearNow = DateTime.Now.ToString("yyyy");
-                string MonthNow = DateTime.Now.ToString("MM");
-                string DayNow = DateTime.Now.ToString("dd");
-                string HourNow = DateTime.Now.ToString("HH");
-                string MinNow = DateTime.Now.ToString("mm");
-                string path = logFileLink2 + System.Environment.GetEnvironmentVariable("UserName") + "_" + YearNow + "_" + MonthNow + ".txt";
-                string timeD = YearNow + "-" + MonthNow + "-" + DayNow;
-                string timeH = HourNow + ":" + MinNow;
+                string yearNow = DateTime.Now.ToString("yyyy");
+                string monthNow = DateTime.Now.ToString("MM");
+                string dayNow = DateTime.Now.ToString("dd");
+                string hourNow = DateTime.Now.ToString("HH");
+                string minNow = DateTime.Now.ToString("mm");
+                string path = LogFileLink2 + Environment.GetEnvironmentVariable("UserName") + "_" + yearNow + "_" + monthNow + ".txt";
+                string timeD = yearNow + "-" + monthNow + "-" + dayNow;
+                string timeH = hourNow + ":" + minNow;
                 if (!File.Exists(path))
                 {
                     File.Create(path).Close();
@@ -198,7 +204,7 @@ namespace TrackingTime
                         string result = "";
                         using (StreamReader sr = File.OpenText(path))
                         {
-                            string s = "";
+                            string s;
                             while ((s = sr.ReadLine()) != null)
                             {
                                 string[] sSp = s.Split('|');
@@ -221,7 +227,7 @@ namespace TrackingTime
                         bool sts = false;
                         using (StreamReader sr = File.OpenText(path))
                         {
-                            string s = "";
+                            string s;
                             while ((s = sr.ReadLine()) != null)
                             {
                                 string[] sSp = s.Split('|');
@@ -248,23 +254,23 @@ namespace TrackingTime
 
         private void btnViewLog_Click(object sender, EventArgs e)
         {
-            if (hide)
+            if (_hide)
             {
-                btnViewLog.Text = "Hide";
-                changeComboBox();
+                btnViewLog.Text = @"Hide";
+                ChangeComboBox();
             }
-            else btnViewLog.Text = "Show";
+            else btnViewLog.Text = @"Show";
             timerSlide.Start();
         }
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            if (FormWindowState.Minimized == this.WindowState)
+            if (FormWindowState.Minimized == WindowState)
             {
                 TrayIcon.Visible = true;
-                this.Hide();
+                Hide();
             }
-            else if (FormWindowState.Normal == this.WindowState)
+            else if (FormWindowState.Normal == WindowState)
             {
                 TrayIcon.Visible = false;
             }
@@ -274,8 +280,8 @@ namespace TrackingTime
         {
             if (e.Button == MouseButtons.Left)
             {
-                this.Show();
-                this.WindowState = FormWindowState.Normal;
+                Show();
+                WindowState = FormWindowState.Normal;
             }
         }
 
@@ -283,62 +289,62 @@ namespace TrackingTime
         {
             if (e.KeyCode == Keys.Escape)
             {
-                this.WindowState = FormWindowState.Minimized;
-                this.Hide();
+                WindowState = FormWindowState.Minimized;
+                Hide();
             }
         }
 
         private void timerSlide_Tick(object sender, EventArgs e)
         {
-            if (hide)
+            if (_hide)
             {
                 Rectangle rcScreen = Screen.PrimaryScreen.WorkingArea;
-                this.Height += 24;
+                Height += 24;
                 listViewTime.Height += 21;
-                if (this.Height >= (rcScreen.Bottom - 100 - heightOrigin))
+                if (Height >= (rcScreen.Bottom - 100 - _heightOrigin))
                 {
                     timerSlide.Stop();
-                    this.Refresh();
-                    hide = false;
+                    Refresh();
+                    _hide = false;
                 }
             }
             else
             {
-                this.Height -= 24;
+                Height -= 24;
                 listViewTime.Height -= 21;
-                if (this.Height <= heightOrigin)
+                if (Height <= _heightOrigin)
                 {
                     timerSlide.Stop();
-                    this.Refresh();
-                    hide = true;
+                    Refresh();
+                    _hide = true;
                 }
             }
         }
 
         private void comboBoxMonth_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            changeComboBox();
+            ChangeComboBox();
         }
 
         private void comboBoxYear_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            changeComboBox();
+            ChangeComboBox();
         }
 
         private void btnCopy_Click(object sender, EventArgs e)
         {
             string yearC = comboBoxYear.SelectedItem.ToString();
             string monthC = comboBoxMonth.SelectedItem.ToString();
-            string fileName = System.Environment.GetEnvironmentVariable("UserName") + "_" + yearC + "_" + monthC + ".txt";
-            string sourcePath = logFileLink2;
+            string fileName = Environment.GetEnvironmentVariable("UserName") + "_" + yearC + "_" + monthC + ".txt";
+            string sourcePath = LogFileLink2;
             string targetPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\追跡時間\";
-            string sourceFile = System.IO.Path.Combine(sourcePath, fileName);
-            string destFile = System.IO.Path.Combine(targetPath, fileName);
-            if (!System.IO.Directory.Exists(targetPath))
+            string sourceFile = Path.Combine(sourcePath, fileName);
+            string destFile = Path.Combine(targetPath, fileName);
+            if (!Directory.Exists(targetPath))
             {
-                System.IO.Directory.CreateDirectory(targetPath);
+                Directory.CreateDirectory(targetPath);
             }
-            System.IO.File.Copy(sourceFile, destFile, true);
+            File.Copy(sourceFile, destFile, true);
         }
 
         private void listViewTime_ColumnWidthChanging(object sender, ColumnWidthChangingEventArgs e)
@@ -349,30 +355,30 @@ namespace TrackingTime
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            DialogEdit DialogEdit = new DialogEdit(this);
+            DialogEdit dialogEdit = new DialogEdit(this);
             string yearC = comboBoxYear.SelectedItem.ToString();
             string monthC = comboBoxMonth.SelectedItem.ToString();
-            string path = logFileLink2 + System.Environment.GetEnvironmentVariable("UserName") + "_" + yearC + "_" + monthC + ".txt";
-            DialogEdit.lblNameFileEdit.Text = yearC + "-" + monthC;
+            string path = LogFileLink2 + Environment.GetEnvironmentVariable("UserName") + "_" + yearC + "_" + monthC + ".txt";
+            dialogEdit.lblNameFileEdit.Text = yearC + @"-" + monthC;
             using (StreamReader sr = File.OpenText(path))
             {
-                string s = "";
+                string s;
                 while ((s = sr.ReadLine()) != null)
                 {
-                    DialogEdit.richTxtEdit.Text += s + "\n";
+                    dialogEdit.richTxtEdit.Text += s + '\n';
                 }
             }
-            DialogEdit.setLink(path);
+            dialogEdit.SetLink(path);
             Rectangle rcScreen = Screen.PrimaryScreen.WorkingArea;
-            DialogEdit.Location = new Point(this.Location.X + 300, this.Location.Y);
-            if ((rcScreen.Right - DialogEdit.Location.X) > 200) DialogEdit.Location = new Point(this.Location.X + 300, this.Location.Y);
-            else DialogEdit.Location = new Point(this.Location.X - 250, this.Location.Y);
-            DialogEdit.ShowDialog();
+            dialogEdit.Location = new Point(Location.X + 300, Location.Y);
+            if ((rcScreen.Right - dialogEdit.Location.X) > 200) dialogEdit.Location = new Point(Location.X + 300, Location.Y);
+            else dialogEdit.Location = new Point(Location.X - 250, Location.Y);
+            dialogEdit.ShowDialog();
         }
 
         private void btnClose_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("アプリケーションを終了しますか？", "閉じる", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation,
+            if (MessageBox.Show(@"アプリケーションを終了しますか？", @"閉じる", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation,
                     MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
                 Application.Exit();
@@ -382,8 +388,8 @@ namespace TrackingTime
 
         private void btnMinimum_Click(object sender, EventArgs e)
         {
-            this.WindowState = FormWindowState.Minimized;
-            this.Hide();
+            WindowState = FormWindowState.Minimized;
+            Hide();
         }
     }
 }

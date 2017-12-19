@@ -7,35 +7,35 @@ namespace TrackingTime
 {
     public partial class DialogEdit : Form
     {
-        private Form1 mainForm = null;
-        private string linkFile;
+        private readonly Form1 _mainForm;
+        private string _linkFile;
         public DialogEdit()
         {
             InitializeComponent();
         }
         public DialogEdit(Form callingForm)
         {
-            mainForm = callingForm as Form1;
+            _mainForm = callingForm as Form1;
             InitializeComponent();
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            string path = getLink();
+            string path = GetLink();
             UTF8Encoding utf8 = new UTF8Encoding();
             StreamWriter sw = new StreamWriter(path, false, utf8);
             sw.Write(richTxtEdit.Text);
             sw.Close();
-            this.mainForm.changeComboBox();
-            this.Close();
+            _mainForm.ChangeComboBox();
+            Close();
         }
-        public void setLink(string link)
+        public void SetLink(string link)
         {
-            this.linkFile = link;
+            _linkFile = link;
         }
-        private string getLink()
+        private string GetLink()
         {
-            return linkFile;
+            return _linkFile;
         }
     }
 }
